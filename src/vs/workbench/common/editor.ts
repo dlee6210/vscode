@@ -1032,7 +1032,7 @@ export class TextEditorOptions extends EditorOptions implements ITextEditorOptio
 			return undefined;
 		}
 
-		return TextEditorOptions.create({ ...input.options, overrideId: input.overrideId });
+		return TextEditorOptions.create(input.options);
 	}
 
 	/**
@@ -1363,14 +1363,18 @@ export async function pathsToEditors(paths: IPathData[] | undefined, fileService
 				startLineNumber: path.lineNumber,
 				startColumn: path.columnNumber || 1
 			},
-			pinned: true
-		} : { pinned: true };
+			pinned: true,
+			overrideId: path.overrideId
+		} : {
+				pinned: true,
+				overrideId: path.overrideId
+			};
 
 		let input: IResourceEditorInput | IUntitledTextResourceEditorInput;
 		if (!exists) {
 			input = { resource, options, forceUntitled: true };
 		} else {
-			input = { resource, options, forceFile: true, overrideId: path.overrideId };
+			input = { resource, options, forceFile: true };
 		}
 
 		return input;

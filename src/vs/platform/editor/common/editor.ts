@@ -58,11 +58,6 @@ export interface IBaseResourceEditorInput {
 	 * looking at the scheme of the resource(s).
 	 */
 	readonly forceUntitled?: boolean;
-
-	/**
-	 * An optional id to override the editor used to edit the resource, e.g. custom editor.
-	 */
-	readonly overrideId?: string;
 }
 
 export interface IResourceEditorInput extends IBaseResourceEditorInput {

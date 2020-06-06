@@ -9,7 +9,7 @@ import { withNullAsUndefined, assertIsDefined } from 'vs/base/common/types';
 import { URI } from 'vs/base/common/uri';
 import { IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle';
 import { IEditor, IEditorViewState, ScrollType, IDiffEditor } from 'vs/editor/common/editorCommon';
-import { IEditorModel, IEditorOptions, ITextEditorOptions, IBaseResourceEditorInput, IResourceEditorInput, EditorActivation, EditorOpenContext, ITextEditorSelection, TextEditorSelectionRevealType } from 'vs/platform/editor/common/editor';
+import { IEditorModel, IEditorOptions, ITextEditorOptions, IBaseResourceEditorInput, IResourceEditorInput, EditorActivation, EditorOpenContext, ITextEditorSelection, TextEditorSelectionRevealType, IGNORE_OVERRIDES } from 'vs/platform/editor/common/editor';
 import { IInstantiationService, IConstructorSignature0, ServicesAccessor, BrandedService } from 'vs/platform/instantiation/common/instantiation';
 import { RawContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { Registry } from 'vs/platform/registry/common/platform';
@@ -926,14 +926,12 @@ export class EditorOptions implements IEditorOptions {
 	ignoreError: boolean | undefined;
 
 	/**
-	 * Does not use editor overrides while opening the editor.
+	 * Allows to override the editor that should be used to display the input:
+	 * - `undefined`: let the editor decide for itself
+	 * - `IGNORE_OVERRIDES`: disable overrides
+	 * - `string`: specific override by id
 	 */
-	ignoreOverrides: boolean | undefined;
-
-	/**
-	 * An optional id to override the editor used to edit the resource, e.g. custom editor.
-	 */
-	overrideId: string | undefined;
+	override?: typeof IGNORE_OVERRIDES | string;
 
 	/**
 	 * A optional hint to signal in which context the editor opens.
@@ -991,12 +989,8 @@ export class EditorOptions implements IEditorOptions {
 			this.index = options.index;
 		}
 
-		if (typeof options.ignoreOverrides === 'boolean') {
-			this.ignoreOverrides = options.ignoreOverrides;
-		}
-
-		if (typeof options.overrideId === 'string') {
-			this.overrideId = options.overrideId;
+		if (typeof options.override === 'string' || options.override === IGNORE_OVERRIDES) {
+			this.override = options.override;
 		}
 
 		if (typeof options.context === 'number') {
@@ -1364,10 +1358,10 @@ export async function pathsToEditors(paths: IPathData[] | undefined, fileService
 				startColumn: path.columnNumber || 1
 			},
 			pinned: true,
-			overrideId: path.overrideId
+			override: path.overrideId
 		} : {
 				pinned: true,
-				overrideId: path.overrideId
+				override: path.overrideId
 			};
 
 		let input: IResourceEditorInput | IUntitledTextResourceEditorInput;

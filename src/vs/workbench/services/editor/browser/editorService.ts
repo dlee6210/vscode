@@ -5,7 +5,7 @@
 
 import * as nls from 'vs/nls';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { IResourceEditorInput, ITextEditorOptions, IEditorOptions, EditorActivation } from 'vs/platform/editor/common/editor';
+import { IResourceEditorInput, ITextEditorOptions, IEditorOptions, EditorActivation, IGNORE_OVERRIDES } from 'vs/platform/editor/common/editor';
 import { SideBySideEditor, IEditorInput, IEditorPane, GroupIdentifier, IFileEditorInput, IUntitledTextResourceEditorInput, IResourceDiffEditorInput, IEditorInputFactoryRegistry, Extensions as EditorExtensions, EditorInput, SideBySideEditorInput, IEditorInputWithOptions, isEditorInputWithOptions, EditorOptions, TextEditorOptions, IEditorIdentifier, IEditorCloseEvent, ITextEditorPane, ITextDiffEditorPane, IRevertOptions, SaveReason, EditorsOrder, isTextEditorPane, IWorkbenchEditorConfiguration, toResource, IVisibleEditorPane } from 'vs/workbench/common/editor';
 import { ResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput';
 import { Registry } from 'vs/platform/registry/common/platform';
@@ -491,22 +491,22 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	}
 
 	getEditorOverrides(resource: URI, options: IEditorOptions | undefined, group: IEditorGroup | undefined): [IOpenEditorOverrideHandler, IOpenEditorOverrideEntry][] {
-		const ret = [];
+		const overrides = [];
 		for (const handler of this.openEditorHandlers) {
-			const handlers = handler.getEditorOverrides ? handler.getEditorOverrides(resource, options, group).map(val => { return [handler, val] as [IOpenEditorOverrideHandler, IOpenEditorOverrideEntry]; }) : [];
-			ret.push(...handlers);
+			const handlers = handler.getEditorOverrides ? handler.getEditorOverrides(resource, options, group).map(val => [handler, val] as [IOpenEditorOverrideHandler, IOpenEditorOverrideEntry]) : [];
+			overrides.push(...handlers);
 		}
 
-		return ret;
+		return overrides;
 	}
 
 	private onGroupWillOpenEditor(group: IEditorGroup, event: IEditorOpeningEvent): void {
-		if (event.options?.ignoreOverrides) {
-			return;
+		if (event.options?.override === IGNORE_OVERRIDES) {
+			return; // return early when overrides are explicitly disabled
 		}
 
 		for (const handler of this.openEditorHandlers) {
-			const result = handler.open(event.editor, event.options, group, event.context ?? OpenEditorContext.NEW_EDITOR, event.options?.overrideId);
+			const result = handler.open(event.editor, event.options, group, event.context ?? OpenEditorContext.NEW_EDITOR, event.options?.override);
 			const override = result?.override;
 			if (override) {
 				event.prevent((() => override.then(editor => withNullAsUndefined(editor))));

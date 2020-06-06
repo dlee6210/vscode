@@ -121,6 +121,8 @@ export enum EditorOpenContext {
 	USER
 }
 
+export const IGNORE_OVERRIDES = Object.create(null);
+
 export interface IEditorOptions {
 
 	/**
@@ -197,14 +199,12 @@ export interface IEditorOptions {
 	readonly ignoreError?: boolean;
 
 	/**
-	 * Does not use editor overrides while opening the editor
+	 * Allows to override the editor that should be used to display the input:
+	 * - `undefined`: let the editor decide for itself
+	 * - `IGNORE_OVERRIDES`: disable overrides
+	 * - `string`: specific override by id
 	 */
-	readonly ignoreOverrides?: boolean;
-
-	/**
-	 * An optional id to override the editor used to edit the resource, e.g. custom editor.
-	 */
-	readonly overrideId?: string;
+	readonly override?: typeof IGNORE_OVERRIDES | string;
 
 	/**
 	 * A optional hint to signal in which context the editor opens.

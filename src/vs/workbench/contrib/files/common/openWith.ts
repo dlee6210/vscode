@@ -7,7 +7,7 @@ import { basename, extname, isEqual } from 'vs/base/common/resources';
 import { URI } from 'vs/base/common/uri';
 import * as nls from 'vs/nls';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IEditorOptions, ITextEditorOptions } from 'vs/platform/editor/common/editor';
+import { IEditorOptions, ITextEditorOptions, IGNORE_OVERRIDES } from 'vs/platform/editor/common/editor';
 import { IQuickInputService, IQuickPickItem } from 'vs/platform/quickinput/common/quickInput';
 import { IEditorInput, IEditorPane } from 'vs/workbench/common/editor';
 import { FileEditorInput } from 'vs/workbench/contrib/files/common/editors/fileEditorInput';
@@ -136,7 +136,7 @@ export function getAllAvailableEditors(
 					}
 
 					const fileEditorInput = editorService.createEditorInput({ resource: input.resource, forceFile: true });
-					const textOptions = options ? { ...options, ignoreOverrides: true } : { ignoreOverrides: true };
+					const textOptions: IEditorOptions | ITextEditorOptions = options ? { ...options, override: IGNORE_OVERRIDES } : { override: IGNORE_OVERRIDES };
 					return { override: editorService.openEditor(fileEditorInput, textOptions, group) };
 				}
 			},
